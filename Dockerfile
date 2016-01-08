@@ -33,15 +33,62 @@ RUN ./contrib/download_prerequisites
 # Build & Install GCC
 RUN ./configure --enable-languages=c,c++,fortran
 RUN make -j4
-RUN make check
 RUN make install
 
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc-5 100 \
-        --slave /usr/bin/g++ g++ /usr/local/bin/g++-5
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc 100 \
+        --slave /usr/bin/g++ g++ /usr/local/bin/g++
 
 RUN rm -f /tmp/gcc-${gccver}.tar.bz2
 
-# Zlib
-ADD http://zlib.net/zlib-${zlibver}.tar.xz /tmp
+WORKDIR /usr/local/src
+# RUN rm -rf /usr/local/src/gcc-${gccver}
 
+
+# Zlib
+ADD http://zlib.net/zlib-${zlibver}.tar.xz /tmp/
+RUN tar xvf /tmp/zlib-${zlibver}.tar.xz
+
+WORKDIR /usr/local/src/zlib-${zlibver}
+RUN ./configure
+RUN make -j4
+RUN make check
+RUN make install
+
+RUN rm -f /tmp/zlib-${zlibver}.tar.xz
+
+WORKDIR /usr/local/src
+# RUN rm -rf /usr/local/src/zlib-${zlibver}
+
+
+# Bzip2
+ADD http://bzip.org/${bz2ver}/bzip2-${bz2ver}.tar.gz /tmp/
+RUN tar xvf /tmp/bzip2-${bz2ver}.tar.gz
+
+WORKDIR /usr/local/src/bzip2-${bz2ver}
+RUN make -f Makefile all install clean
+RUN make -f Makefile-libbz2_so all
+RUN mv libbz2.so* /usr/local/lib/
+
+RUN rm -f /tmp/bzip2-${bz2ver}.tar.gz
+
+WORKDIR /usr/local/src
+# RUN rm -rf /usr/local/src/bzip2-${bz2ver}
+
+
+# xz
+ADD http://tukaani.org/xz/xz-${xzver}.tar.xz /tmp/
+RUN tar xvf /tmp/xz-${xzver}.tar.xz
+
+WORKDIR /usr/local/src/xz-${xzver}
+RUN ./configure
+RUN make -j4
+RUN make check
+RUN make install
+
+RUN rm -f /tmp/xz-${xzver}.tar.xz
+
+WORKDIR /usr/local/src
+# RUN rm -rf /usr/local/src/xz-${xzver
+
+# Clean up ENV
 RUN unset gccver zlibver bz2ver xzver
