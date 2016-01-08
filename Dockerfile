@@ -39,6 +39,9 @@ RUN make install
 RUN update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc-5 100 \
         --slave /usr/bin/g++ g++ /usr/local/bin/g++-5
 
+RUN rm -f /tmp/gcc-${gccver}.tar.bz2
+
 # Zlib
-ADD 
+ADD http://zlib.net/zlib-${zlibver}.tar.xz /tmp
+
 RUN unset gccver zlibver bz2ver xzver
