@@ -35,14 +35,16 @@ RUN ./configure --enable-languages=c,c++,fortran
 RUN make -j4
 RUN make install
 
-RUN update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc 100 \
-        --slave /usr/bin/g++ g++ /usr/local/bin/g++
-
 RUN rm -f /tmp/gcc-${gccver}.tar.bz2
 
 WORKDIR /usr/local/src
-# RUN rm -rf /usr/local/src/gcc-${gccver}
+RUN rm -rf /usr/local/src/gcc-${gccver}
 
+# Set library paths appropriately for new GCC
+#RUN echo '/usr/local/lib64' > /etc/ld.so.conf.d/gcc.conf
+#RUN echo '/usr/local/lib32' >> /etc/ld.so.conf.d/gcc.conf
+#RUN update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc 100 \
+#        --slave /usr/bin/g++ g++ /usr/local/bin/g++
 
 # Zlib
 ADD http://zlib.net/zlib-${zlibver}.tar.xz /tmp/
@@ -57,7 +59,7 @@ RUN make install
 RUN rm -f /tmp/zlib-${zlibver}.tar.xz
 
 WORKDIR /usr/local/src
-# RUN rm -rf /usr/local/src/zlib-${zlibver}
+RUN rm -rf /usr/local/src/zlib-${zlibver}
 
 
 # Bzip2
@@ -72,7 +74,7 @@ RUN mv libbz2.so* /usr/local/lib/
 RUN rm -f /tmp/bzip2-${bz2ver}.tar.gz
 
 WORKDIR /usr/local/src
-# RUN rm -rf /usr/local/src/bzip2-${bz2ver}
+RUN rm -rf /usr/local/src/bzip2-${bz2ver}
 
 
 # xz
@@ -88,7 +90,37 @@ RUN make install
 RUN rm -f /tmp/xz-${xzver}.tar.xz
 
 WORKDIR /usr/local/src
-# RUN rm -rf /usr/local/src/xz-${xzver
+RUN rm -rf /usr/local/src/xz-${xzver}
+
+
+# CMake
+ADD https://cmake.org/files/v3.4/cmake-3.4.1.tar.gz /tmp/
+RUN tar xvf /tmp/cmake-3.4.1.tar.gz
+
+WORKDIR /usr/local/src/cmake-3.4.1
+RUN ./configure
+RUN make -j4
+RUN make install
+
+RUN rm -f /tmp/cmake-3.4.1.tar.gz
+
+WORKDIR /usr/local/src
+RUN rm -rf /usr/local/src/cmake-3.4.1
+
+
+# Boost
+ADD http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.bz2 /tmp/
+RUN tar xvf /tmp/boost_1_60_0.tar.bz2
+
+WORKDIR /usr/local/src/boost_1_60_0
+RUN ./bootstrap.sh
+RUN ./b2 install
+
+RUN rm -f /tmp/boost_1_60_0.tar.bz2
+
+WORKDIR /usr/local/src
+# RUN rm -rf /usr/local/src/boost_1_60_0
+
 
 # Clean up ENV
 RUN unset gccver zlibver bz2ver xzver
