@@ -8,6 +8,7 @@ ENV xzver 5.2.2
 
 # Update debian & install generic dependencies
 ENV DEBIAN_FRONTEND noninteractive
+RUN sed -i -e 's/httpredir.debian.org/mirrors.kernel.org/' /etc/apt/sources.list
 RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install -y \
