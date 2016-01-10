@@ -120,7 +120,7 @@ RUN ./b2 install
 RUN rm -f /tmp/boost_1_60_0.tar.bz2
 
 WORKDIR /usr/local/src
-# RUN rm -rf /usr/local/src/boost_1_60_0
+RUN rm -rf /usr/local/src/boost_1_60_0
 
 
 # Clean up ENV
