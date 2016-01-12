@@ -69,7 +69,7 @@ ADD http://bzip.org/${bz2ver}/bzip2-${bz2ver}.tar.gz /tmp/
 RUN tar xvf /tmp/bzip2-${bz2ver}.tar.gz
 
 WORKDIR /usr/local/src/bzip2-${bz2ver}
-RUN make -f Makefile all install clean
+RUN make -f Makefile CFLAGS=-fPIC all install clean
 RUN make -f Makefile-libbz2_so all
 RUN mv libbz2.so* /usr/local/lib/
 
@@ -116,7 +116,7 @@ RUN tar xvf /tmp/boost_1_60_0.tar.bz2
 
 WORKDIR /usr/local/src/boost_1_60_0
 RUN ./bootstrap.sh
-RUN ./b2 install
+RUN ./b2 --without-python install
 
 RUN rm -f /tmp/boost_1_60_0.tar.bz2
 
