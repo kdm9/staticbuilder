@@ -42,10 +42,11 @@ WORKDIR /usr/local/src
 RUN rm -rf /usr/local/src/gcc-${gccver}
 
 # Set library paths appropriately for new GCC
-#RUN echo '/usr/local/lib64' > /etc/ld.so.conf.d/gcc.conf
-#RUN echo '/usr/local/lib32' >> /etc/ld.so.conf.d/gcc.conf
-#RUN update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc 100 \
-#        --slave /usr/bin/g++ g++ /usr/local/bin/g++
+RUN echo '/usr/local/lib64' > /etc/ld.so.conf.d/gcc.conf
+RUN echo '/usr/local/lib32' >> /etc/ld.so.conf.d/gcc.conf
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc 100 \
+        --slave /usr/bin/g++ g++ /usr/local/bin/g++
+RUN ldconfig
 
 # Zlib
 ADD http://zlib.net/zlib-${zlibver}.tar.xz /tmp/
