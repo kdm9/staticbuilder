@@ -126,3 +126,5 @@ RUN rm -rf /usr/local/src/boost_1_60_0
 
 # Clean up ENV
 RUN unset gccver zlibver bz2ver xzver
+
+WORKDIR /root
