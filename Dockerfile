@@ -1,113 +1,84 @@
-FROM debian:squeeze
+FROM centos:5
 MAINTAINER Kevin Murray <spam@kdmurray.id.au>
 
-ENV gccver 5.3.0
-ENV zlibver 1.2.8
-ENV bz2ver 1.0.6
-ENV xzver 5.2.2
 
-# Update debian & install generic dependencies
-RUN sed -i -e 's/httpredir.debian.org/mirrors.kernel.org/' \
-        /etc/apt/sources.list               && \
-    apt-get update                          && \
-    apt-get upgrade -yy                     && \
-    apt-get install -yy \
-        build-essential \
-        vim \
-        git \
-        gcc-multilib \
-        wget \
-        less                                && \
-    apt-get clean -yy                       && \
-    rm -rf /var/cache/apt/archives/* /var/lib/apt/lists/*
+RUN yum update -y                           && \
+    yum groupinstall -y "Development Tools" && \
+    yum install -y wget less epel-release   && \
+    yum install -y vim-enhanced git
 
+WORKDIR /tmp
+RUN wget https://mirrors.kernel.org/gnu/gcc/gcc-5.3.0/gcc-5.3.0.tar.bz2 \
+    && wget http://zlib.net/zlib-1.2.8.tar.xz \
+    && wget http://cmake.org/files/v3.4/cmake-3.4.1.tar.gz \
+    && wget http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.bz2 \
+    && wget http://tukaani.org/xz/xz-5.2.2.tar.xz \
+    && wget http://bzip.org/1.0.6/bzip2-1.0.6.tar.gz \
+
+WORKDIR /usr/local/src
+
+ENV CC=/usr/bin/gcc CXX=/usr/bin/gcc
 
 # Obtain GCC sources (and dependencies)
-ADD http://mirrors.kernel.org/gnu/gcc/gcc-${gccver}/gcc-${gccver}.tar.bz2 /tmp/
-WORKDIR /usr/local/src
-RUN tar xvf /tmp/gcc-${gccver}.tar.bz2      && \
-    cd /usr/local/src/gcc-${gccver}         && \
+RUN tar xvf /tmp/gcc-*.tar*                 && \
+    cd /usr/local/src/gcc*                  && \
     ./contrib/download_prerequisites        && \
-    ./configure --enable-languages=c,c++,fortran && \
+    ./configure --enable-languages=c,c++,fortran --disable-multilib && \
     make -j4                                && \
     make install                            && \
     cd /usr/local/src                       && \
-    rm -f /tmp/gcc-${gccver}.tar.bz2        && \
-    rm -rf /usr/local/src/gcc-${gccver}
-
-# Set library paths appropriately for new GCC
-#RUN echo '/usr/local/lib64' > /etc/ld.so.conf.d/gcc.conf
-#RUN echo '/usr/local/lib32' >> /etc/ld.so.conf.d/gcc.conf
-#RUN update-alternatives --install /usr/bin/gcc gcc /usr/local/bin/gcc 100 \
-#        --slave /usr/bin/g++ g++ /usr/local/bin/g++
-#RUN ldconfig
+    rm -rf /usr/local/src/* /tmp/gcc-*
 
 # Zlib
-ADD http://zlib.net/zlib-${zlibver}.tar.xz /tmp/
-RUN tar xvf /tmp/zlib-${zlibver}.tar.xz     && \
-    cd /usr/local/src/zlib-${zlibver}       && \
-    CC=/usr/bin/gcc                         && \
+RUN tar xvf /tmp/zlib*.tar*                 && \
+    cd /usr/local/src/zlib*                 && \
     ./configure                             && \
     make -j4                                && \
     make check                              && \
     make install                            && \
-    rm -f /tmp/zlib-${zlibver}.tar.xz       && \
     cd /usr/local/src                       && \
-    rm -rf /usr/local/src/zlib-${zlibver}
+    rm -rf /usr/local/src/* /tmp/zlib*
 
 # Bzip2
-ADD http://bzip.org/${bz2ver}/bzip2-${bz2ver}.tar.gz /tmp/
-RUN tar xvf /tmp/bzip2-${bz2ver}.tar.gz     && \
-    cd /usr/local/src/bzip2-${bz2ver}       && \
-    export CC=/usr/bin/gcc                  && \
+RUN tar xvf /tmp/bzip2-*.tar*               && \
+    cd /usr/local/src/bzip2-*               && \
     make -f Makefile CFLAGS=-fPIC all install clean && \
     make -f Makefile-libbz2_so all          && \
     mv libbz2.so* /usr/local/lib/           && \
     cd /usr/local/src                       && \
-    rm -f /tmp/bzip2-${bz2ver}.tar.gz       && \
-    rm -rf /usr/local/src/bzip2-${bz2ver}
+    rm -f /usr/local/src/* /tmp/bzip2-*
 
 
 # xz
-ADD http://tukaani.org/xz/xz-${xzver}.tar.xz /tmp/
-RUN tar xvf /tmp/xz-${xzver}.tar.xz         && \
-    cd /usr/local/src/xz-${xzver}           && \
-    export CC=/usr/bin/gcc                  && \
+RUN tar xvf /tmp/xz-*.tar*                  && \
+    cd /usr/local/src/xz-*                  && \
     ./configure                             && \
     make -j4                                && \
     make check                              && \
     make install                            && \
     cd /usr/local/src                       && \
-    rm -f /tmp/xz-${xzver}.tar.xz           && \
-    rm -rf /usr/local/src/xz-${xzver}
+    rm -rf /usr/local/src/* /tmp/xz-*
 
 
 # CMake
-ADD https://cmake.org/files/v3.4/cmake-3.4.1.tar.gz /tmp/
-RUN tar xvf /tmp/cmake-3.4.1.tar.gz         && \
-    cd /usr/local/src/cmake-3.4.1           && \
-    export CC=/usr/bin/gcc                  && \
-    export CXX=/usr/bin/g++                 && \
+RUN tar xvf /tmp/cmake-*.tar*               && \
+    cd /usr/local/src/cmake-*               && \
     ./configure                             && \
     make -j4                                && \
     make install                            && \
     cd /usr/local/src                       && \
-    rm -f /tmp/cmake-3.4.1.tar.gz           && \
-    rm -rf /usr/local/src/cmake-3.4.1
+    rm -rf /usr/local/src* /tmp/cmake-*
 
 
 # Boost
-ADD http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.bz2 /tmp/
-RUN tar xvf /tmp/boost_1_60_0.tar.bz2       && \
-    cd /usr/local/src/boost_1_60_0          && \
+RUN tar xvf /tmp/boost_*.tar                && \
+    cd /usr/local/src/boost_*               && \
     ./bootstrap.sh                          && \
     ./b2 --without-python install           && \
     cd /usr/local/src                       && \
-    rm -f /tmp/boost_1_60_0.tar.bz2         && \
-    rm -rf /usr/local/src/boost_1_60_0
+    rm -rf /usr/local/src/* /tmp/boost_*
 
 
 # Clean up ENV
-RUN unset gccver zlibver bz2ver xzver CC CXX
-
+RUN unset CC CXX
 WORKDIR /root
