@@ -10,10 +10,10 @@ RUN yum update -y                           && \
 WORKDIR /tmp
 RUN wget https://mirrors.kernel.org/gnu/gcc/gcc-5.3.0/gcc-5.3.0.tar.bz2 \
     && wget http://zlib.net/zlib-1.2.8.tar.xz \
-    && wget http://cmake.org/files/v3.4/cmake-3.4.1.tar.gz \
+    && wget https://github.com/Kitware/CMake/archive/v3.5.1.tar.gz \
     && wget http://downloads.sourceforge.net/project/boost/boost/1.60.0/boost_1_60_0.tar.bz2 \
     && wget http://tukaani.org/xz/xz-5.2.2.tar.xz \
-    && wget http://bzip.org/1.0.6/bzip2-1.0.6.tar.gz \
+    && wget http://bzip.org/1.0.6/bzip2-1.0.6.tar.gz
 
 WORKDIR /usr/local/src
 
